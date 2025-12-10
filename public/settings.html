@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Settings — Look-Quick</title>
+  <meta name="description" content="Account settings for Look-Quick. Update profile, picture, and account settings.">
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.svg" alt="Look-Quick logo" class="logo">
+      <h1>Look-Quick</h1>
+    </div>
+    <nav>
+      <a href="landing.html">Home</a>
+      <a href="feed.html">Feed</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="auth">
+      <h2>Account settings</h2>
+      <form id="settingsForm">
+        <label>Display name<input type="text" name="displayName" id="displayNameInput"></label>
+        <label>Bio<textarea name="bio" id="bioInput" rows="3"></textarea></label>
+        <label>Profile picture<input type="file" name="photo" id="profilePhoto" accept="image/*"></label>
+        <div class="actions">
+          <button type="submit" class="btn">Save changes</button>
+          <button id="signOutBtn" class="btn alt" type="button">Sign out</button>
+        </div>
+      </form>
+
+      <hr>
+      <section>
+        <h3>Danger zone</h3>
+        <p class="muted">Deleting your account is irreversible. You may need to re-authenticate to delete.</p>
+        <button id="deleteAccountBtn" class="btn" style="background:linear-gradient(90deg,var(--primary-red),#c62828)">Delete account</button>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2025 Quick Red Tech. Look-Quick is owned and built by Quick Red Tech.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="src/js/app.js"></script>
+</body>
+</html>

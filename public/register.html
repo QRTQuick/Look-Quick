@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Register — Look-Quick</title>
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body>
+  <main class="auth container">
+    <h2>Create account</h2>
+    <form id="registerForm">
+      <label>Display name<input type="text" name="displayName" required></label>
+      <label>Username<input type="text" name="username" required></label>
+      <label>Email<input type="email" name="email" required></label>
+      <label>Password<input type="password" name="password" required></label>
+      <div class="actions">
+        <button type="submit" class="btn">Create account</button>
+        <button id="googleRegisterBtn" type="button" class="btn google-btn">Sign up with Google</button>
+      </div>
+    </form>
+  </main>
+
+  <script type="module" src="src/js/auth.js"></script>
+</body>
+</html>
