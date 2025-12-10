@@ -2,6 +2,43 @@ import { auth, db } from './firebase.js';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 import { doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
+// Small in-app banner utility for auth errors. Injects CSS once and shows a dismissible banner.
+function ensureAuthBannerStyles(){
+  if (document.getElementById('auth-banner-style')) return;
+  const css = `
+  .auth-banner{position:fixed;left:12px;right:12px;top:12px;z-index:9999;padding:12px 16px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:12px;font-weight:600}
+  .auth-banner.error{background:#ffece8;color:#7a0200;border:1px solid #ffb4aa}
+  .auth-banner.info{background:#eef6ff;color:#08306b;border:1px solid #bcdffb}
+  .auth-banner .close{margin-left:auto;cursor:pointer;padding:4px 8px;border-radius:4px;background:rgba(0,0,0,0.06)}
+  `;
+  const s = document.createElement('style'); s.id = 'auth-banner-style'; s.textContent = css; document.head.appendChild(s);
+}
+
+function showAuthError(message, { type = 'error', timeout = 8000 } = {}){
+  try {
+    ensureAuthBannerStyles();
+    let banner = document.getElementById('auth-banner');
+    if (!banner){
+      banner = document.createElement('div'); banner.id = 'auth-banner'; banner.className = `auth-banner ${type}`;
+      const text = document.createElement('div'); text.className = 'text'; banner.appendChild(text);
+      const close = document.createElement('div'); close.className = 'close'; close.textContent = '✕'; close.title = 'Dismiss';
+      close.addEventListener('click', ()=>{ banner.remove(); });
+      banner.appendChild(close);
+      document.body.appendChild(banner);
+    }
+    banner.querySelector('.text').textContent = message;
+    banner.className = `auth-banner ${type}`;
+    if (timeout && timeout > 0){
+      clearTimeout(banner._dismissTimer);
+      banner._dismissTimer = setTimeout(()=>{ banner.remove(); }, timeout);
+    }
+    return banner;
+  } catch (e){ console.error('Failed to show auth banner', e); }
+}
+
+// Make available globally so other modules can show auth issues
+window.showAuthError = showAuthError;
+
 // Auth module (cleaned up). Exposes page init functions and listener helper.
 export function initLogin(){
   const loginForm = document.getElementById('loginForm');
@@ -18,7 +55,7 @@ export function initLogin(){
         navigateTo('feed.html');
       } catch (err){
         console.error('Email sign-in error', err);
-        alert(err.message);
+        showAuthError(err.message || 'Sign-in failed');
       }
     });
   }
@@ -40,6 +77,7 @@ export function initLogin(){
           navigateTo('feed.html');
         } catch (err){
           console.error('Auto sign-in failed', err);
+          showAuthError('Auto sign-in failed: ' + (err.message || err.code || 'Unknown'));
         }
       })();
     }
@@ -62,7 +100,7 @@ export function initLogin(){
         navigateTo('feed.html');
       } catch (err){
         console.error('Google sign-in error', err);
-        alert('Google sign-in failed: ' + err.message);
+        showAuthError('Google sign-in failed: ' + (err.message || err.code || 'Unknown'));
       }
     });
   }
@@ -94,7 +132,7 @@ export function initRegister(){
         navigateTo('feed.html');
       } catch (err){
         console.error('Register error', err);
-        alert(err.message);
+        showAuthError(err.message || 'Registration failed');
       }
     });
   }
@@ -116,7 +154,7 @@ export function initRegister(){
         navigateTo('feed.html');
       } catch (err){
         console.error('Google register error', err);
-        alert('Google sign-up failed: ' + err.message);
+        showAuthError('Google sign-up failed: ' + (err.message || err.code || 'Unknown'));
       }
     });
   }
@@ -131,7 +169,18 @@ export async function doSignOut(){
 }
 
 function navigateTo(path){
-  if (window.router && typeof window.router.navigate === 'function') window.router.navigate(path);
-  else window.location = path;
+  if (window.router && typeof window.router.navigate === 'function') {
+    window.router.navigate(path);
+    return;
+  }
+  // If router not available, try to respect a BASE if one exists
+  try {
+    const base = (window.router && window.router.BASE) ? window.router.BASE : '/';
+    // avoid double-prefix if path already contains base
+    const final = (path && path.startsWith(base)) ? path : (base + path).replace(/\/+/g, '/');
+    window.location.href = final;
+  } catch (e) {
+    window.location = path;
+  }
 }
 
